@@ -7,61 +7,49 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.Linq;
+using CORD.Reports;
 
 namespace CORD
 {
     public partial class ReportStep1 : Form
     {
-        public ReportStep1(DataHolder data)
+
+        private List<Dictionary<string, string>> m_report_data;
+        private ReportTemplate m_reportTemplate;
+
+        public ReportStep1(DataHolder data, ReportTemplate reportTemplate)
         {
             InitializeComponent();
 
-            PopulateReportTable(data);
+            m_reportTemplate = reportTemplate;
+
+            ReportGenerator reportGenerator = new ReportGenerator(m_reportTemplate.Funcs);
+
+            m_report_data = reportGenerator.CreateReport(data);
+
+            PopulateReportTable();
         }
 
-        private void PopulateReportTable(DataHolder data)
+        private void PopulateReportTable()
         {
             reportsGridView.DataSource = "";
 
             DataTable dataTable = new DataTable();
 
-            dataTable.Columns.Add("Duty Id");
-            dataTable.Columns.Add("Start Time");
-            dataTable.Columns.Add("End Time");
+            foreach (var item in m_reportTemplate.ColumnNames)
+            {
+                dataTable.Columns.Add(item);
+            }
 
             reportsGridView.DataSource = dataTable;
 
-            foreach (Duty duty in data.Duties)
+            foreach (var item in m_report_data)
             {
                 DataRow row = dataTable.NewRow();
-                row["Duty Id"] = duty.Duty_Id;
-
-                // getting start time
-
-                if (duty.Duty_Events[0].StartTime != DateTime.MinValue)
+                foreach (var column_name in m_reportTemplate.ColumnNames)
                 {
-                    row["Start Time"] = duty.Duty_Events[0].StartTime.ToString("HH:mm");
+                    row[column_name] = item[column_name];
                 }
-                else if (duty.Duty_Events[0].Vehicle_Id != 0)
-                {
-                    Vehicle vehicle = data.Vehicles.Find((x) => x.Vehicle_Id == duty.Duty_Events[0].Vehicle_Id);
-                    VehicleEvent firstEvent = vehicle.Vehicle_Events.First(x => x.Duty_Id == duty.Duty_Id);
-                    row["Start Time"] = firstEvent.StartTime.ToString("HH:mm");
-                }
-
-                // getting end time
-
-                if (duty.Duty_Events[duty.Duty_Events.Count-1].EndTime != DateTime.MinValue)
-                {
-                    row["End Time"] = duty.Duty_Events[duty.Duty_Events.Count - 1].EndTime.ToString("HH:mm");
-                }
-                else if (duty.Duty_Events[duty.Duty_Events.Count-1].Vehicle_Id != 0)
-                {
-                    Vehicle vehicle = data.Vehicles.Find((x) => x.Vehicle_Id == duty.Duty_Events[duty.Duty_Events.Count - 1].Vehicle_Id);
-                    VehicleEvent lastEvent = vehicle.Vehicle_Events.Last(x => x.Duty_Id == duty.Duty_Id);
-                    row["End Time"] = lastEvent.EndTime.ToString("HH:mm");
-                }
-
                 dataTable.Rows.Add(row);
             }
 
@@ -69,6 +57,5 @@ namespace CORD
 
             reportsGridView.DataSource = dataTable;
         }
-
     }
 }
