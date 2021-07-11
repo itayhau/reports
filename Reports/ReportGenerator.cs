@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CORD.Reports
 {
-    class ReportGenerator
+    public class ReportGenerator
     {
         private Dictionary<string, Func<DataHolder, Duty, string>> m_funcs;
 

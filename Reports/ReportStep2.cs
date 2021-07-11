@@ -46,7 +46,7 @@ namespace CORD
                 }
                 else if (duty.Duty_Events[0].Vehicle_Id != 0)
                 {
-                    Vehicle vehicle = data.Vehicles.Find((x) => x.Vehicle_Id == duty.Duty_Events[0].Vehicle_Id);
+                    Vehicle vehicle = data.Vehicles.First((x) => x.Vehicle_Id == duty.Duty_Events[0].Vehicle_Id);
                     VehicleEvent firstEvent = vehicle.Vehicle_Events.First(x => x.Duty_Id == duty.Duty_Id);
                     row["Start Time"] = firstEvent.StartTime.ToString("HH:mm");
                 }
